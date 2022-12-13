@@ -1,0 +1,74 @@
+import pandas as pd
+
+df=pd.read_csv('tips.csv')
+
+df
+
+### Divide the dataset into independent and dependent dataset
+y=df['tip']
+X=df[df.columns.difference(['tip'])]
+
+X.head()
+
+y.head()
+
+df.info()
+
+
+# Import label encoder 
+from sklearn import preprocessing
+label_encoder = preprocessing.LabelEncoder()
+# df['sentiment']= label_encoder.fit_transform(df['sentiment']) 
+X['sex']= label_encoder.fit_transform(df['sex'])
+X['smoker']= label_encoder.fit_transform(df['smoker']) 
+X['day']= label_encoder.fit_transform(df['day']) 
+X['time']= label_encoder.fit_transform(df['time']) 
+
+
+df.head()
+
+
+### Train Test split
+from sklearn.model_selection import train_test_split
+X_train,X_test,y_train,y_test=train_test_split(X,y,train_size=0.75,random_state=1)
+
+#using RandomForestRegression
+from sklearn.ensemble import RandomForestRegressor
+regressor = RandomForestRegressor(n_estimators=200).fit(X_train,y_train)
+
+!pip install shapash
+
+from shapash.explainer.smart_explainer import SmartExplainer
+
+XAI = SmartExplainer(regressor)
+
+XAI.compile(
+    x=X_test,
+#     model=regressor,
+   )
+
+XAI
+
+app = XAI.run_app(title_story='Tips Dataset')
+
+predictor = XAI.to_smartpredictor()
+
+#Save The Pickle
+predictor.save('./predictor.pkl')
+
+#Load the pickle files
+from shapash.utils.load_smartpredictor import load_smartpredictor
+predictor_load = load_smartpredictor('./predictor.pkl')
+
+predictor_load.add_input(x=X, ypred=y)
+
+detailed_contributions = predictor_load.detail_contributions()
+
+detailed_contributions.head()
+
+#Showing 3 contribution
+predictor_load.modify_mask(max_contrib=3)
+
+explanation = predictor_load.summarize()
+
+explanation.head()
