@@ -1,5 +1,6 @@
 import pandas as pd
 
+#import Dataset
 df=pd.read_csv('tips.csv')
 
 df
@@ -18,7 +19,8 @@ df.info()
 # Import label encoder 
 from sklearn import preprocessing
 label_encoder = preprocessing.LabelEncoder()
-# df['sentiment']= label_encoder.fit_transform(df['sentiment']) 
+
+#applying labeling encoding
 X['sex']= label_encoder.fit_transform(df['sex'])
 X['smoker']= label_encoder.fit_transform(df['smoker']) 
 X['day']= label_encoder.fit_transform(df['day']) 
@@ -36,19 +38,23 @@ X_train,X_test,y_train,y_test=train_test_split(X,y,train_size=0.75,random_state=
 from sklearn.ensemble import RandomForestRegressor
 regressor = RandomForestRegressor(n_estimators=200).fit(X_train,y_train)
 
+#Now here we installed shapash(It's a XAI library)
 !pip install shapash
 
 from shapash.explainer.smart_explainer import SmartExplainer
 
+#regression model imports to SmartExplainer
 XAI = SmartExplainer(regressor)
 
+#Compiling model
 XAI.compile(
     x=X_test,
-#     model=regressor,
+
    )
 
 XAI
 
+#running the shapash app
 app = XAI.run_app(title_story='Tips Dataset')
 
 predictor = XAI.to_smartpredictor()
